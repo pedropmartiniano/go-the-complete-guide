@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// somente funções ou variaveis que iniciam com a letra maiuscula podem ser importadas a partir desse package
 func WriteFloatToFile(value float64, fileName string) {
 	balanceText := fmt.Sprint(value)
 	os.WriteFile(fileName, []byte(balanceText), 0644)
