@@ -6,10 +6,11 @@ import (
 	"time"
 )
 
+// struct com tags
 type Note struct {
-	Title      string
-	Content    string
-	Created_at time.Time
+	Title      string `json:"title"`
+	Content    string `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func New(title, content string) (Note, error) {
@@ -25,5 +26,5 @@ func New(title, content string) (Note, error) {
 }
 
 func (note Note) Log() {
-	fmt.Printf("Title: %v\nContent: %v\nCreated_at: %v", note.Title, note.Content, note.Created_at)
+	fmt.Printf("Title: %v\nContent: %v\nCreated_at: %v", note.Title, note.Content, note.CreatedAt)
 }
