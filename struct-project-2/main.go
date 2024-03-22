@@ -49,12 +49,46 @@ func main() {
 		return
 	}
 
-	printSomething("Execução finalizada")
+	printSomething(todo)
+	add(1, 2)
 }
 
 // mesma coisa que any
 func printSomething(value interface{}) {
-	fmt.Println(value)
+	intVal, ok := value.(int)
+
+	var result any
+	if ok {
+		result = intVal + 1
+	}
+
+	floatVal, ok := value.(float64)
+
+	if ok {
+		result = floatVal + 1.5
+	}
+
+	stringVal, ok := value.(string)
+
+	if ok {
+		result = fmt.Sprintf("Valor é string: %v", stringVal)
+	}
+	fmt.Println(result)
+
+	switch value.(type) {
+	case int:
+		fmt.Println("Integer: ", value)
+
+	case float64:
+		fmt.Println("Float64: ", value)
+
+	case string:
+		fmt.Println(value)
+
+	default:
+		fmt.Println("Other value: ", value)
+	}
+
 }
 
 func outputData(data outputtable) error {
