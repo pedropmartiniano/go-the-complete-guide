@@ -1,4 +1,4 @@
-package main
+package lists
 
 import "fmt"
 
@@ -45,6 +45,16 @@ func main() {
 		teste = append(teste, fmt.Sprint(i))
 	}
 
-	
+	fmt.Println(teste)
 
+	teste2 := []string{"10", "11", "12"}
+
+	// append de dois arrays diferente
+	// desestruturação de arrays
+	teste3 := append(teste, teste2...)
+	fmt.Println(teste3)
+
+	for value := range teste3 {
+		fmt.Println(value)
+	}
 }
