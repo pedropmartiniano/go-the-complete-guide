@@ -4,33 +4,40 @@ import (
 	"fmt"
 
 	"example.com/practice-project/conversion"
-	"example.com/practice-project/filemanager"
+	"example.com/practice-project/manager"
 )
 
 type TaxIncludedPriceJob struct {
-	TaxRate           float64
-	Prices            []float64
-	TaxIncludedPrices map[string]string
+	TaxRate           float64           `json:"tax_rate"`
+	Prices            []float64         `json:"input_prices"`
+	TaxIncludedPrices map[string]string `json:"tax_included_prices"`
+	Manager           manager.Manager   `json:"-"` // excluir esse campo do json criado a partir dessa estrutura
 }
 
-func (job *TaxIncludedPriceJob) LoadData() {
-	lines, err := filemanager.ReadLines("prices.txt")
+func (job *TaxIncludedPriceJob) LoadData() error {
+	lines, err := job.Manager.ReadLines()
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	prices, err := conversion.StringsToFloats(lines)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	job.Prices = prices
+
+	return nil
 }
 
-func (job *TaxIncludedPriceJob) Process() {
-	job.LoadData()
+func (job *TaxIncludedPriceJob) Process() error {
+	err := job.LoadData()
+
+	if err != nil {
+		return err
+	}
 
 	result := make(map[string]string)
 
@@ -41,12 +48,13 @@ func (job *TaxIncludedPriceJob) Process() {
 
 	job.TaxIncludedPrices = result
 
-	filemanager.WriteJSON(fmt.Sprintf("result_%.0f.json", 100*job.TaxRate), job)
+	// essa função já irá retornar um erro ou nil
+	return job.Manager.WriteResult(job)
 }
 
-func NewTaxIncludedPriceJob(taxRate float64) *TaxIncludedPriceJob {
+func NewTaxIncludedPriceJob(manager manager.Manager, taxRate float64) *TaxIncludedPriceJob {
 	return &TaxIncludedPriceJob{
-		Prices:  []float64{10, 20, 30},
 		TaxRate: taxRate,
+		Manager: manager,
 	}
 }
