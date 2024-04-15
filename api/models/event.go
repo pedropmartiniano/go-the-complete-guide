@@ -71,3 +71,56 @@ func GetAllEvents() ([]Event, error) {
 
 	return events, nil
 }
+
+func GetEventById(id int64) (*Event, error) {
+	query := `SELECT * FROM events WHERE id = ?`
+
+	// método quando se sabe que irá retornar apenas 1 linha
+	row := db.DB.QueryRow(query, id)
+
+	var event Event
+	err := row.Scan(&event.Id, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserId)
+
+	if err != nil {
+		// só é possível retornar nil como o valor de event pois está sendo retornado o ponteiro dele, e o null value de um ponteiro é "nil", se estivesse sendo retornado o event como valor, seria necessário retornar um event vazio, pois esse é seu null value
+		return nil, err
+	}
+
+	return &event, nil
+}
+
+func (e Event) Update() error {
+	query := `
+		UPDATE events
+		SET	name = ?, description = ?, location = ?, dateTime = ?
+		WHERE id = ?
+	`
+
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.Id)
+
+	return err
+}
+
+func (e Event) Delete() error {
+	query := `DELETE FROM events WHERE id = ?`
+
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.Id)
+
+	return err
+}
