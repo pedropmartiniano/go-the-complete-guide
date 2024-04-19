@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+
 	"example.com/events-api/db"
 	"example.com/events-api/utils"
 )
@@ -39,4 +41,25 @@ func (u *User) Save() error {
 	u.Id = userId
 	u.Password = hashPassword
 	return err
+}
+
+func GetUserByEmail(email string) (*User, error) {
+	query := `SELECT * FROM users WHERE email = ?`
+
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return nil, errors.New("could not prepare the query statement")
+	}
+
+	row := stmt.QueryRow(email)
+
+	var user User
+	err = row.Scan(&user.Id, &user.Email, &user.Password)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
