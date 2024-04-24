@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"strconv"
 
 	"example.com/events-api/models"
@@ -44,6 +43,8 @@ func createEvents(c *gin.Context) {
 		return
 	}
 
+	userId := c.GetInt64("userId")
+	event.UserId = userId
 	err = event.Save()
 
 	if err != nil {
@@ -59,19 +60,25 @@ func updateEvent(c *gin.Context) {
 	c.ShouldBindJSON(&eventBody)
 
 	eventId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	userId := c.GetInt64("userId")
 
 	if err != nil {
 		c.JSON(400, gin.H{"message": "could not parse the event Id", "error": err})
 		return
 	}
 
-	_, err = models.GetEventById(eventId)
+	event, err := models.GetEventById(eventId)
+
 	if err != nil {
 		c.JSON(400, gin.H{"message": "could not get the event", "error": err})
 		return
 	}
 
-	fmt.Println(eventBody)
+	if event.UserId != userId {
+		c.JSON(403, gin.H{"message": "you can only update your our events"})
+		return
+	}
+
 	eventBody.Id = eventId
 
 	err = eventBody.Update()
@@ -86,6 +93,7 @@ func updateEvent(c *gin.Context) {
 
 func deleteEvent(c *gin.Context) {
 	eventId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	userId := c.GetInt64("userId")
 
 	if err != nil {
 		c.JSON(400, gin.H{"message": "Could not parse the event id"})
@@ -96,6 +104,11 @@ func deleteEvent(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(400, gin.H{"message": "Could not get the event"})
+		return
+	}
+
+	if userId != event.UserId {
+		c.JSON(403, gin.H{"message": "you can only delete your our events"})
 		return
 	}
 

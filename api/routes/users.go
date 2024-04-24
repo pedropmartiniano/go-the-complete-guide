@@ -57,3 +57,14 @@ func signin(c *gin.Context) {
 
 	c.JSON(200, gin.H{"message": "user authenticated", "token": token})
 }
+
+func getUsers(c *gin.Context) {
+	users, err := models.GetAllUsers()
+
+	if err != nil {
+		c.JSON(400, gin.H{"message": "could not get users"})
+		return
+	}
+
+	c.JSON(200, gin.H{"users": users})
+}

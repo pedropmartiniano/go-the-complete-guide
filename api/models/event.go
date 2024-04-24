@@ -12,7 +12,13 @@ type Event struct {
 	Description string    `binding:"required"`
 	Location    string    `binding:"required"`
 	DateTime    time.Time `binding:"required"`
-	UserId      int
+	UserId      int64
+}
+
+type Registration struct {
+	Id      int64
+	EventId int64
+	UserId  int64
 }
 
 func (e *Event) Save() error {
@@ -123,4 +129,65 @@ func (e Event) Delete() error {
 	_, err = stmt.Exec(e.Id)
 
 	return err
+}
+
+func (e Event) Register(userId int64) error {
+	query := `INSERT INTO registrations(event_id, user_id) VALUES (?, ?)`
+
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.Id, userId)
+
+	return err
+}
+
+func (e Event) CancelRegistration(userId int64) error {
+	query := `DELETE FROM registrations WHERE event_id = ? AND user_id = ?`
+
+	stmt, err := db.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.Id, userId)
+
+	return err
+}
+
+func (e Event) GetEventsRegistrations() ([]Registration, error) {
+	query := `SELECT * FROM registrations WHERE event_id = ?`
+
+	stmt, err := db.DB.Prepare(query)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(e.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var registrations []Registration
+
+	for rows.Next() {
+		var registration Registration
+		err := rows.Scan(&registration.Id, &registration.EventId, &registration.UserId)
+
+		if err != nil {
+			return nil, err
+		}
+		
+		registrations = append(registrations, registration)
+	}
+
+	return registrations, nil
 }
